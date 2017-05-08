@@ -64,12 +64,18 @@ def problemToImage(prob):
     ctx.set_source_rgb(0,0,0)
     ctx.show_text(prob)
     ctx.stroke()
-    surface.write_to_png('../hello_world.png')
-    image = np.frombuffer(surface.get_data(),np.uint32).reshape(MAXHEIGHT,-1)
+#    surface.write_to_png('../hello_world.png')
+    image = np.frombuffer(surface.get_data(),np.uint8)
+    newimage = np.zeros((MAXHEIGHT,MAXWIDTH,3))
+    for channel in range(0,3):
+        newimage[:,:,channel-1] = image[channel::4].reshape(MAXHEIGHT,MAXWIDTH)
+#        print(channel,np.max(newimage[:,:,channel]),np.min(newimage[:,:,channel-1]))
+    newimage /= 255.
+#    image = image.append()
 #    print(image.shape)
 #    print(image)
-    image /= 255
-    return image
+#    image /= 255
+    return newimage
     
 def getAnswer(prob):
     return np.float(prob[prob.find("=")+1:].strip())
@@ -77,9 +83,11 @@ def getAnswer(prob):
 def getFullMatrix(dataType):
     
     problems = [randomizeVars(i) for i in readData(dataType)]
-    X = np.zeros((len(problems),MAXHEIGHT,MAXWIDTH))
+    problems = problems[:2]
+    X = np.zeros((len(problems),MAXHEIGHT,MAXWIDTH,3))
     y = np.zeros((len(problems),1))
     for n,problem in enumerate(problems):
-        X[n,:,:] = problemToImage(problem[0])
+        image = problemToImage(problem[0])
+        X[n,:,:,:] = image
         y[n] = getAnswer(problem[1])
     return X, y

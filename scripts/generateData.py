@@ -13,8 +13,8 @@ import re
 
 MAXWIDTH = 128
 MAXHEIGHT = 64
-SIZEVARIANCE = 10
-MINSIZE = 10
+SIZEVARIANCE = 8
+MINSIZE = 12
 
 def readData(dataType):
     out = []
@@ -83,7 +83,6 @@ def getAnswer(prob):
 def getFullMatrix(dataType):
     
     problems = [randomizeVars(i) for i in readData(dataType)]
-    problems = problems[:2]
     X = np.zeros((len(problems),MAXHEIGHT,MAXWIDTH,3))
     y = np.zeros((len(problems),1))
     for n,problem in enumerate(problems):

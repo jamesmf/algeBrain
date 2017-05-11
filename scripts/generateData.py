@@ -79,10 +79,16 @@ def problemToImage(prob):
     
 def getAnswer(prob):
     return np.float(prob[prob.find("=")+1:].strip())
+    
+def getTrivialProblem():
+    i = int(np.random.randint(0,20))
+    return ("x = "+str(i), "x = "+str(i))
 
-def getFullMatrix(dataType):
+def getFullMatrix(dataType,trivialSupplement=1000):
     
     problems = [randomizeVars(i) for i in readData(dataType)]
+    if dataType == "simple":
+        problems += [randomizeVars(getTrivialProblem()) for i in range(0,trivialSupplement)]
     X = np.zeros((len(problems),MAXHEIGHT,MAXWIDTH,3))
     y = np.zeros((len(problems),1))
     for n,problem in enumerate(problems):

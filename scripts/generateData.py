@@ -14,7 +14,7 @@ import re
 MAXWIDTH = 128
 MAXHEIGHT = 64
 SIZEVARIANCE = 8
-MINSIZE = 12
+MINSIZE = 8
 
 def readData(dataType):
     out = []
@@ -87,7 +87,7 @@ def getTrivialProblem():
 def getFullMatrix(dataType,trivialSupplement=1000):
     
     problems = [randomizeVars(i) for i in readData(dataType)]
-    if dataType == "simple":
+    if dataType in ("simple","simpleTest"):
         problems += [randomizeVars(getTrivialProblem()) for i in range(0,trivialSupplement)]
     X = np.zeros((len(problems),MAXHEIGHT,MAXWIDTH,3))
     y = np.zeros((len(problems),1))

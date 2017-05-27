@@ -13,8 +13,8 @@ import re
 
 MAXWIDTH = 128
 MAXHEIGHT = 64
-SIZEVARIANCE = 8
-MINSIZE = 8
+SIZEVARIANCE = 6
+MINSIZE = 12
 
 def readData(dataType):
     out = []
@@ -45,11 +45,7 @@ def randomizeVars(prob):
 def problemToImage(prob):
     font = random.choice(["Sans","Arial"])
     size = int(np.floor(np.random.rand()*SIZEVARIANCE)+MINSIZE)
-    pixLen = int(size/4*len(prob))
-    widthVar = MAXWIDTH-pixLen
     heightVar = MAXHEIGHT-size-1
-    xPosition = int(np.floor(np.random.rand()*widthVar))+1
-    yPosition = size+int(np.floor(np.random.rand()*heightVar))+1
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, MAXWIDTH, MAXHEIGHT)
     ctx = cairo.Context (surface)
     ctx.set_source_rgb(1,1,1)
@@ -58,8 +54,13 @@ def problemToImage(prob):
     ctx.select_font_face(font)
     ctx.set_font_size(size)
     x,y,w,h,dx,dy = ctx.text_extents(prob)
-    xPosition = np.max([np.min([xPosition,MAXWIDTH-w]),0])
-    yPosition = np.max([np.min([yPosition,MAXHEIGHT-h/2]),0])
+    print(x,y,w,h,dx,dy)
+    xPosition = int(np.floor(np.random.rand()*(MAXWIDTH-w)))+1
+    yPosition = size+int(np.floor(np.random.rand()*heightVar))+1
+    print(xPosition,yPosition)
+    xPosition = np.max([np.min([xPosition,MAXWIDTH-w]),1])
+    yPosition = np.max([np.min([yPosition,MAXHEIGHT-h/2]),1])
+    print(xPosition,yPosition)
     ctx.move_to(xPosition,yPosition)
     ctx.set_source_rgb(0,0,0)
     ctx.show_text(prob)
@@ -68,10 +69,8 @@ def problemToImage(prob):
     image = np.frombuffer(surface.get_data(),np.uint8)
     newimage = np.zeros((MAXHEIGHT,MAXWIDTH,3))
     for channel in range(0,3):
-        newimage[:,:,channel-1] = image[channel::4].reshape(MAXHEIGHT,MAXWIDTH)
-#        print(channel,np.max(newimage[:,:,channel]),np.min(newimage[:,:,channel-1]))
+        newimage[:,:,channel] = image[channel::4].reshape(MAXHEIGHT,MAXWIDTH)
     newimage /= 255.
-#    image = image.append()
 #    print(image.shape)
 #    print(image)
 #    image /= 255

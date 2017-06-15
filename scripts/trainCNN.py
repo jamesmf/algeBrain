@@ -8,6 +8,7 @@ Created on Sun May  7 12:51:59 2017
 import generateData as gen
 import defineModel as dm
 import numpy as np
+import pandas as pd
 from sklearn.utils import shuffle
 import scipy.misc as mi
 from keras import optimizers
@@ -16,50 +17,53 @@ from keras.models import Model
 from keras.models import load_model
 import sys
 
-numEpochs = 10
+numEpochs = 25
 
 
 if len(sys.argv) < 2:
     model = dm.newModel()
     X,y = gen.getFullMatrix("simple")
-    X = X[:6000]
-    y = y[:6000]
+    X = X[:2000]
+    y = y[:2000]
     #print(X.shape)
     #print(X[0])
     #mi.imshow(X[0])
     model.fit(X,X[:,:,:,0].reshape(X.shape[0],X.shape[1]*X.shape[2]),epochs=1)
     
-    for layer in model.layers:
-        layer.trainable = True
-        print(layer.name)
-    lastHiddenLayer = model.layers[-1].output
-    model2 = Dense(1)(lastHiddenLayer)
-    model = Model(inputs=model.input,outputs=model2)
-    model.compile(optimizer=optimizers.SGD(lr=0.0001, momentum=0.9), loss='mean_squared_error')
+    model = dm.recreateModel(model)
+
     for epoch in range(0,numEpochs):
         print("generating new data")
         X,y = gen.getFullMatrix("simple")
-        X,y = shuffle(X,y,random_state=0)
+        X,y0,y1 = shuffle(X,y[0],y[1],random_state=0)
+        y = [y0,y1]
         model.fit(X,y)
-        model.save('../models/simpleModel.h5')
+        model.save('../models/simpleModelMultitask.h5')
     
 elif sys.argv[1] == "train":
     print("loading model")
-    model = load_model('../models/simpleModel.h5')
+    model = load_model('../models/simpleModelMultitask.h5')
     print("model loaded")
     for epoch in range(0,numEpochs):
         print("generating new data")
-        X,y = gen.getFullMatrix("simple",trivialSupplement=15000)
-        X,y = shuffle(X,y,random_state=0)
+        X,y = gen.getFullMatrix("simple2",trivialSupplement=10000)
+        X,y0,y1 = shuffle(X,y[0],y[1],random_state=0)
+        y = [y0,y1]
         model.fit(X,y)
-        model.save('../models/simpleModel.h5')
+        model.save('../models/simpleModelMultitask.h5')
     
 elif sys.argv[1] == "test":
     print("loading model")
-    model = load_model('../models/simpleModel.h5')
+    model = load_model('../models/simpleModelMultitask.h5')
     print("model loaded")
     Xtest,ytest = gen.getFullMatrix("simpleTest",trivialSupplement=100)
     ypred = model.predict(Xtest)
+    yMultiTest = ytest[1]
+    ytest = ytest[0]
     for i in range(0,Xtest.shape[0]):
-        mi.imsave("../data/output/im_"+str(i)+"_"+str(ytest[i][0])+'_'+str(ypred[i])+'.jpeg',Xtest[i,:,:,:])
-    
+        print(ypred[0][i],ytest[i],'\t\t',ypred[1][i],yMultiTest[i])
+        mi.imsave("../data/output/im_"+str(i)+"_"+str(ytest[i])+'_'+str(ypred[0][i])+'.jpeg',Xtest[i,:,:,:])
+    df = pd.DataFrame(data=ytest,columns=["ytest"])
+    df["ypred"] = ypred[0]
+    df = df.reset_index()
+    df["SE"] = (df["ytest"] - df["ypred"])**2

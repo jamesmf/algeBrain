@@ -12,7 +12,7 @@ import os
 import re
 
 MAXWIDTH = 128
-MAXHEIGHT = 64
+MAXHEIGHT = 128
 SIZEVARIANCE = 6
 MINSIZE = 14
 MULTITASK_VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'x', 'y', 'z']
@@ -66,13 +66,12 @@ def problemToImage(prob):
     ctx.stroke()
 #    surface.write_to_png('../hello_world.png')
     image = np.frombuffer(surface.get_data(),np.uint8)
-    newimage = np.zeros((MAXHEIGHT,MAXWIDTH,3))
-    for channel in range(0,3):
+    newimage = np.zeros((MAXHEIGHT,MAXWIDTH,1))
+    for channel in range(0,1):
         newimage[:,:,channel] = image[channel::4].reshape(MAXHEIGHT,MAXWIDTH)
     newimage /= 255.
-#    print(image.shape)
-#    print(image)
-#    image /= 255
+    newimage = np.ones_like(newimage) - newimage
+    newimage = newimage[:,:,0]
     return newimage
     
 def getAnswer(prob):
@@ -90,18 +89,18 @@ def getTrivialProblem():
     return ("x = "+str(i), "x = "+str(i))
 
 def getFullMatrix(dataType,trivialSupplement=1000):
-    if dataType.lower().find("test") > -1:
-        seedReset = np.random.randint(0,10000)
+    seedReset = np.random.randint(0,10000)
+    if (dataType.lower().find("test") > -1) or (dataType.lower().find("val") > -1):
         np.random.seed(0)
     problems = [randomizeVars(i) for i in readData(dataType)]
     if dataType in ("simple","simpleTest"):
         problems += [randomizeVars(getTrivialProblem()) for i in range(0,trivialSupplement)]
-    X = np.zeros((len(problems),MAXHEIGHT,MAXWIDTH,3))
+    X = np.zeros((len(problems),MAXHEIGHT,MAXWIDTH,1))
     y = np.zeros((len(problems),1))
     y2 = np.zeros((len(problems),MULTITASK_SIZE))
     for n,problem in enumerate(problems):
         image = problemToImage(problem[0])
-        X[n,:,:,:] = image
+        X[n,:,:,0] = image
         y[n] = getAnswer(problem[1])
         y2[n] = getGlyphCount(problem[0])
     np.random.seed(seedReset)

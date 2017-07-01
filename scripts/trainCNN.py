@@ -19,21 +19,24 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 import sys
 
 patience = 10
-numEpochs = 250
+numEpochs = 150
 modelPath = "../models/"
 
 callbacks = [
-    EarlyStopping(monitor='val_Prediction_loss', 
+    EarlyStopping(monitor='val_loss', 
                   patience=patience, verbose=1),
     ModelCheckpoint(modelPath+'algeBrain.cnn', 
                     monitor='val_loss', save_best_only=True,
                     verbose=1)
 ]
 
-model = dm.ResNet50(include_top=False, weights='imagenet',
-             input_tensor=None, input_shape=None,
-             pooling=None,
-             classes=1000)
+args = sys.argv
+if len(args) > 1:
+    # load already trained model, continue training
+    model = load_model(args[1])
+else:
+    # create new ResNet (not full 50) with extra FC layers for algebra
+    model = dm.ResNet()
 
 Xtrain, ytrain = gen.getFullMatrix("simple3", trivialSupplement=500)
 Xcv, ycv = gen.getFullMatrix("simpleValidation",trivialSupplement=100)
@@ -41,7 +44,6 @@ cbs = model.fit(Xtrain,ytrain,epochs=numEpochs,
                 validation_data=(Xcv, ycv),
                 callbacks=callbacks,verbose=1,shuffle=True)
 model = load_model(modelPath+'algeBrain.cnn')
-    
 
 print("loading model")
 model = load_model(modelPath+'algeBrain.cnn')

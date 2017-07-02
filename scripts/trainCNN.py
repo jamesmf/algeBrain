@@ -18,8 +18,8 @@ from keras.models import load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 import sys
 
-patience = 10
-numEpochs = 150
+patience = 25
+numEpochs = 1000
 modelPath = "../models/"
 
 callbacks = [
@@ -29,6 +29,17 @@ callbacks = [
                     monitor='val_loss', save_best_only=True,
                     verbose=1)
 ]
+testCounts = {"trivial":25,"simple":200}
+cvCounts = {"trivial":50, "simple": 250}
+trainCounts = {"trivial":2000, "simple":8000}
+
+Xtest, ytest, probsTest = gen.getFullMatrix("test",testCounts,[])
+# problems in the test set should leak into validation
+holdOut = [i[0] for i in probsTest]
+Xcv, ycv, probscv = gen.getFullMatrix("val",cvCounts,holdOut)
+holdOut = holdOut + [i[0] for i in probscv]
+Xtrain, ytrain, probsTrain = gen.getFullMatrix("train",trainCounts,holdOut)
+
 
 args = sys.argv
 if len(args) > 1:

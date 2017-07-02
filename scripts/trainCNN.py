@@ -47,10 +47,8 @@ if len(args) > 1:
     model = load_model(args[1])
 else:
     # create new ResNet (not full 50) with extra FC layers for algebra
-    model = dm.ResNet()
+    model = dm.ResNet(pooling='None')
 
-Xtrain, ytrain = gen.getFullMatrix("simple3", trivialSupplement=500)
-Xcv, ycv = gen.getFullMatrix("simpleValidation",trivialSupplement=100)
 cbs = model.fit(Xtrain,ytrain,epochs=numEpochs,
                 validation_data=(Xcv, ycv),
                 callbacks=callbacks,verbose=1,shuffle=True)

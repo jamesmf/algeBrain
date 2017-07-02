@@ -109,7 +109,7 @@ def generateAlgebra(probType, reservedProblems, depth = 0):
         added = np.random.randint(0,100) - 50
     prob, ans = solveSimple(var,coeff,added,rhs)
     if prob in reservedProblems:
-        print("problem already in reservedProblems: ", prob)
+#        print("problem already in reservedProblems: ", prob)
         if depth > 50:
             print("can't find original problem of type: ",probType)
             sys.exit(1)

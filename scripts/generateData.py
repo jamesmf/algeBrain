@@ -105,3 +105,44 @@ def getFullMatrix(dataType,trivialSupplement=1000):
         y2[n] = getGlyphCount(problem[0])
     np.random.seed(seedReset)
     return X, [y,y2]
+
+
+def generateAlgebra(probType):
+    coeff = 0
+    rhs = np.random.randint(0,200) - 100
+#    var = np.random.choice(['x','y','z'])
+    var = 'x'
+    if probType == "trivial":
+        coeff = 1
+        added = 0
+    if probType == "simple":
+        while coeff != 0:
+            coeff = np.random.randint(0,30) - 15
+        added = np.random.randint(0,100) - 50
+    prob, ans = solveSimple(var,coeff,added,rhs)
+
+
+def solveSimple(var, coeff, added, rhs, forceRound=True):
+    if np.random.rand() > 0.5:
+        if added > 0:
+            probString = str(coeff)+var+' + '+str(added)+' = '+str(rhs)
+        elif added < 0:
+            probString = str(coeff)+var+' - '+str(abs(added))+' = '+str(rhs)
+        else:
+            probString = str(coeff)+var+' = '+str(rhs)
+    else:
+        if added == 0:
+            probString = str(coeff)+var+' = '+str(rhs)
+        else:
+            probString = str(added)+' + '+str(coeff)+var+' = '+str(rhs)
+    newrhs = rhs - added
+    ans = newrhs / coeff
+    print(probString, ans)
+    if forceRound:
+        if ans == int(ans):
+            return probString, ans
+        else:
+            return solveSimple(var, coeff, added+1, rhs)
+    else:
+        return probString, ans
+        

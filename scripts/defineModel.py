@@ -100,7 +100,7 @@ def conv_block(input_tensor, kernel_size, filters, stage, block, strides=(2, 2))
     return x
 
 
-def ResNet(pooling='avg'):
+def ResNet(pooling='None'):
     """
     # Returns
         A Keras model instance.
@@ -160,7 +160,7 @@ def ResNet(pooling='avg'):
     model = Model(inputs=inputs,outputs=[answerLayer,glyphOutput])
     model.compile(optimizer=SGD(lr=0.0001, momentum=0.9),
                                 loss='mean_squared_error',
-                                loss_weights={'glyphs':10,
+                                loss_weights={'glyphs':200,
                                               'Prediction':1})
 
     return model
